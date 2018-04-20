@@ -1,0 +1,21 @@
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+    var query = getParameterByName('query');
+    var socket = io('https://localhost:3333', { query: 'token='+query });
+    socket.on('connect', function () {});
+    socket.on('event', function (data) { });
+    socket.on('newMessage', function (data) {
+        console.log(data);
+    });
+    socket.on('disconnect', function () { });
+</script>
+<p>aaa</p>

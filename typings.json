@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "jsonwebtoken": "registry:npm/jsonwebtoken#7.1.8+20160811031426"
+  }
+}
