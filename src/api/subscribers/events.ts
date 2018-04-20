@@ -21,5 +21,6 @@ export const events = {
     },
     reaction: {
         created: 'onReaction',
+        deleted: 'onDeleted',
     },
 };

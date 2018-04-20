@@ -23,4 +23,9 @@ export class ReactionEventSubscriber {
         }).catch(err => log.error('Reaction ' + data.data.id + ' created! but Action not added'));
     }
 
+    @On(events.reaction.deleted)
+    public onDeleted(data: MetaEvents): void {
+        log.info('Reaction ' + data.data.id + ' deleted!');
+    }
+
 }

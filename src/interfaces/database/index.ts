@@ -10,3 +10,4 @@ export { IPostModel } from './actions/post';
 export { ICommentModel } from './actions/comment';
 export { IAttachmentModel } from './attachment';
 export { IReactionModel } from './actions/reaction';
+export { INotificationModel } from './feed/notification';
