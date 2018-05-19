@@ -1,7 +1,5 @@
 import * as dotenv from 'dotenv';
-import * as glob from 'glob';
 import * as path from 'path';
-import * as uuid from 'uuid/v4';
 
 // tslint:disable-next-line:no-var-requires
 const pkg = require('../package.json');
@@ -72,23 +70,12 @@ export const env = {
         query: getOsEnv('DB_QUERY'),
         salt: toNumber(getOsEnv('DB_PASSWORD_SALT')),
     },
-    graphql: {
-        enabled: toBool(getOsEnv('GRAPHQL_ENABLED')),
-        route: getOsEnv('GRAPHQL_ROUTE'),
-        editor: toBool(getOsEnv('GRAPHQL_EDITOR')),
-    },
     swagger: {
         enabled: toBool(getOsEnv('SWAGGER_ENABLED')),
         route: getOsEnv('SWAGGER_ROUTE'),
         file: getOsEnv('SWAGGER_FILE'),
         username: getOsEnv('SWAGGER_USERNAME'),
         password: getOsEnv('SWAGGER_PASSWORD'),
-    },
-    monitor: {
-        enabled: toBool(getOsEnv('MONITOR_ENABLED')),
-        route: getOsEnv('MONITOR_ROUTE'),
-        username: getOsEnv('MONITOR_USERNAME'),
-        password: getOsEnv('MONITOR_PASSWORD'),
     },
     api: {
         error: toNumber(getOsEnv('API_ERROR')),
@@ -108,5 +95,9 @@ export const env = {
     frontend: {
         url: getOsEnv('FRONT_URL'),
         password_recover: getOsEnv('FRONT_PASSWORD_RECOVER'),
+    },
+    payments: {
+        publishableKey: getOsEnv('STRIPEPUBLISHABLE'),
+        secretKey: getOsEnv('STRIPESECRET'),
     },
 };

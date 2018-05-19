@@ -78,6 +78,10 @@ const UserSchema = new Schema({
             required: false,
             default: 'https://gravatar.com/avatar/?s=200&d=retro',
         },
+        profilePicture: {
+            type: String,
+            required: false,
+        },
         city: {
             type: String,
             required: false,
@@ -121,6 +125,10 @@ const UserSchema = new Schema({
             type: String,
             required: false,
         },
+        stripe: {
+            type: String,
+            required: false,
+        },
     },
     points: {
         firstreg: { type: Number, default: 10, required: false },
@@ -151,7 +159,8 @@ UserSchema.pre('save', function(this: IUserModel, next: HookNextFunction): any {
 });
 
 UserSchema.method('comparePassword', function(this: IUserModel, password: string): boolean {
-    if (bcrypt.compareSync(password, this.password)) { return true; }
+    const user = this;
+    if (bcrypt.compareSync(password, user.password)) { return true; }
     return false;
 });
 

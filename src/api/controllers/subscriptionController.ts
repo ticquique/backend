@@ -32,7 +32,8 @@ export class SubscriptionController {
         const page = parseInt(req.query.page, 10) || null;
         const perPage = parseInt(req.query.perPage, 10) || null;
         const partial = req.query.partial || null;
-        subscriptionService.find(page, perPage, resources, sort, filter, partial, optional)
+        const populate = req.query.populate || null;
+        subscriptionService.find(page, perPage, resources, sort, filter, partial, optional, populate)
             .then((subscriptions) => {
                 res.status(env.api.success).json(subscriptions);
                 next();

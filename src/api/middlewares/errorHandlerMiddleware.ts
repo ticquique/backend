@@ -10,7 +10,6 @@ export const ErrorHandlerMiddleware = (error: HttpError, req: express.Request, r
     res.json({
         name: error.name,
         message: error.message,
-        errors: error[`errors`] || [],
     });
 
     if (isProduction) {

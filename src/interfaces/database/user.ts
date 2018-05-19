@@ -12,6 +12,7 @@ interface IUser {
     privileges?: 'Member' | 'Client' | 'Owner' | 'Admin';
     profile?: {
         picture?: string,
+        profilePicture?: string,
         city?: string,
         country?: string,
         birth_date?: Date,
@@ -22,6 +23,7 @@ interface IUser {
         facebook?: string,
         twitter?: string,
         google?: string,
+        stripe?: string
     };
     points?: {
         numLikes?: number,
@@ -32,7 +34,7 @@ interface IUser {
     updatedAt?: Date;
     passwordResetToken?: string;
     passwordResetExpires?: Date;
-    comparePassword(this: IUserModel, password: string): boolean;
+    comparePassword(this: IUserModel, password: string, user?: IUserModel): boolean;
 }
 
 export interface IUserModel extends IUser, mongoose.Document {}

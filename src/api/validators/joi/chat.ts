@@ -20,6 +20,7 @@ const listConversations = Joi.object().keys({
     sort: Joi.string(),
     filter: Joi.string(),
     partial: Joi.bool(),
+    populate: Joi.string(),
 });
 
 const createConversation = Joi.object().keys({
@@ -46,6 +47,7 @@ const listMessages = Joi.object().keys({
     sort: Joi.string(),
     filter: Joi.string(),
     partial: Joi.bool(),
+    populate: Joi.any(),
 });
 
 const deleteMessage = Joi.object().keys({

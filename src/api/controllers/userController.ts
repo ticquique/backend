@@ -119,6 +119,17 @@ export class UserController {
         });
     }
 
+    public updatePassword = (req: Request, res: Response, next: NextFunction): void => {
+        const userService = this.userService;
+        const userId = req.get('api_key') ? req.query.userid : res.locals.user.sub;
+        userService.updatePassword(userId, req.body, req.get('api_key') || null).then((user) => {
+            res.status(env.api.success).json(user);
+        }).catch((err: Error) => {
+            const e = new HttpError(401, err.message);
+            next(e);
+        });
+    }
+
     public deleteUser = (req: Request, res: Response, next: NextFunction): void => {
         const userService = this.userService;
         const userId = req.get('api_key') ? req.body.id : res.locals.user.sub;

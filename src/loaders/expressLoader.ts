@@ -2,7 +2,6 @@ import * as bodyParser from 'body-parser';
 import * as compression from 'compression';
 import * as cors from 'cors';
 import * as express from 'express';
-// import * as monitor from 'express-status-monitor';
 import * as fs from 'fs';
 import * as helmet from 'helmet';
 import { Server, createServer } from 'https';
@@ -27,10 +26,8 @@ export const expressLoader = (settings?) => {
                 passphrase: env.app.sslkeypass,
             };
             const server: Server = createServer(options, app);
-
             const io = sio(server);
-            const chatService: ChatService = ChatService.getInstance(io);
-            // io.path(env.app.socketPath);
+            ChatService.getInstance(io);
             // io.origins(env.app.allowedOrigins);
             app.use(compression());
             app.use(bodyParser.json({ type: 'application/json' }));
@@ -43,7 +40,6 @@ export const expressLoader = (settings?) => {
             app.set('view engine', 'pug');
             app.use(express.static(path.join(__dirname, '../public'), { maxAge: 31557600000 }));
             server.listen(env.app.port, () => { resolve(`App is running at ${env.app.schema}://${env.app.host}:${env.app.port}`); });
-            // app.use(monitor());
             router.initialize().then(() => { app.use(router.getRouter()); }, () => { reject(''); }
             );
         } catch (e) {

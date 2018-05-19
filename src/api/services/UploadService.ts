@@ -2,8 +2,6 @@ import * as AWS from 'aws-sdk';
 import { env } from '../../env';
 import * as sharp from 'sharp';
 import { PutObjectRequest } from 'aws-sdk/clients/s3';
-import * as path from 'path';
-import * as fs from 'fs';
 import { Buffer } from 'buffer';
 import { FileUploaded, Urls, FileData } from '../../interfaces';
 

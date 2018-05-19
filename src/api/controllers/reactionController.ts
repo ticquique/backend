@@ -1,10 +1,10 @@
 'use strict';
 
 import { NextFunction, Request, Response } from 'express';
-import { ReactionService } from '../services/ReactionService';
+import { ReactionService } from '../services/actions/ReactionService';
 import { env } from '../../env';
 import { HttpError } from '../../interfaces/errors/HttpError';
-import { Reaction } from '../../database/models/feed/reaction';
+import { Reaction } from '../../database/models/actions/reaction';
 
 export class ReactionController {
 

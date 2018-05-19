@@ -1,10 +1,9 @@
-import { IPostModel, IReactionModel, IUserModel, IConversationModel, ISubscriptionModel, IValidModel } from './database';
-
 export interface MetaEvents {
-    data: IPostModel | IReactionModel | IUserModel | IConversationModel | ISubscriptionModel | IValidModel;
+    data: any;
     metadata: {
         hidden: boolean,
         user: string,
-        relevancy?: number
+        relevancy?: number,
+        type?: any,
     };
 }

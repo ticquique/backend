@@ -16,6 +16,7 @@ const listUsers = Joi.object().keys({
     sort: Joi.string(),
     filter: Joi.string(),
     partial: Joi.bool(),
+    populate: Joi.string(),
 });
 const listValids = Joi.object().keys({
     page: Joi.number().min(1),
@@ -67,7 +68,6 @@ const updateUser = Joi.object().keys({
         role: Joi.string().valid(roles),
         email: Joi.string().email(),
         username: Joi.string().alphanum().min(3).max(80),
-        password: Joi.string().min(8).max(80),
         privacy: Joi.string().valid(privacy),
         privileges: Joi.string().valid(privileges),
         profile: {
@@ -82,9 +82,40 @@ const updateUser = Joi.object().keys({
             facebook: Joi.string().uri(),
             twitter: Joi.string().uri(),
             google: Joi.string().uri(),
+            stripe: Joi.string(),
         },
     },
+});
 
+const updatePassword = Joi.object().keys({
+    headers: Joi.object({
+        api_key: Joi.string().length(36),
+    }).options({ allowUnknown: true }),
+    user: Joi.string().regex(regexMongoId),
+    body: {
+        role: Joi.string().valid(roles),
+        email: Joi.string().email(),
+        username: Joi.string().alphanum().min(3).max(80),
+        lastPassword: Joi.string().min(8).max(80).required(),
+        rePassword: Joi.string().min(8).max(80).required(),
+        newPassword: Joi.string().min(8).max(80).required(),
+        privacy: Joi.string().valid(privacy),
+        privileges: Joi.string().valid(privileges),
+        profile: {
+            picture: Joi.string().uri(),
+            city: Joi.string(),
+            country: Joi.string(),
+            birts_date: Joi.date().min(Date.now() - 1000).max(Date.now()),
+            gender: Joi.string().valid(gender),
+            phone: Joi.string().min(5).max(20),
+            hobbies: Joi.string().max(3000),
+            website: Joi.string().uri(),
+            facebook: Joi.string().uri(),
+            twitter: Joi.string().uri(),
+            google: Joi.string().uri(),
+            stripe: Joi.string(),
+        },
+    },
 });
 // GET /v1/user
 export const listUsersMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -207,6 +238,29 @@ export const updateUserMiddleware = (req: express.Request, res: express.Response
         next(e);
     }
     Joi.validate({ body, headers, user }, updateUser, (err, value) => {
+        if (err) {
+            const e: HttpError = new HttpError(401, err.message);
+            next(e);
+        } else {
+            next();
+        }
+    });
+};
+
+// PUT /v1/user/token
+export const updatePasswordMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const body = req.body;
+    const headers = req.headers;
+    let user: string;
+    if (headers.api_key && req.query.userid) {
+        user = req.query.userid;
+    } else if (res.locals && res.locals.user && res.locals.user.sub) {
+        user = res.locals.user.sub;
+    } else {
+        const e: HttpError = new HttpError(401, 'Login to continue');
+        next(e);
+    }
+    Joi.validate({ body, headers, user }, updatePassword, (err, value) => {
         if (err) {
             const e: HttpError = new HttpError(401, err.message);
             next(e);

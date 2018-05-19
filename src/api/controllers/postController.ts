@@ -9,13 +9,13 @@ import { Attachment } from '../../database/models/attachment';
 import { Post } from '../../database/models/actions/post';
 import { Comment } from '../../database/models/actions/comment';
 import { AttachmentService } from '../services/AttachmentService';
-import { PostService } from '../services/PostService';
-import { CommentService } from '../services/CommentService';
-import { IAttachmentModel, IActionModel } from '../../interfaces/database';
+import { PostService } from '../services/actions/PostService';
+import { CommentService } from '../services/actions/CommentService';
+import { IAttachmentModel } from '../../interfaces/database';
 import { createPostMiddleware } from '../validators';
-import { FeedService } from '../services/FeedService';
+import { FeedService } from '../services/feed/FeedService';
 import { SubscriptionService } from '../services/SubscriptionService';
-import { Action } from '../../database/models/feed/action';
+import { ActionService } from '../services/feed/ActionService';
 
 export class PostController {
 
@@ -26,6 +26,7 @@ export class PostController {
     private commentService: CommentService = CommentService.getInstance();
     private feedService: FeedService = FeedService.getInstance();
     private subscriptionService: SubscriptionService = SubscriptionService.getInstance();
+    private actionService: ActionService = ActionService.getInstance();
 
     private constructor() { }
     // tslint:disable-next-line:member-ordering
@@ -60,7 +61,7 @@ export class PostController {
             const subscribables = subscriptions.map(value => value.subscribable);
             this.feedService.find(null, 1, { user: userId }).then((feeds) => {
                 if (feeds.length > 0) {
-                    this.feedService.findAction(page, 50, {
+                    this.actionService.find(page, 50, {
                         type: 'post',
                         isHidden: false,
                         user: { $in: subscribables },
@@ -70,7 +71,7 @@ export class PostController {
                         const actionsId: string[] = actions.map(value => value._id);
                         feeds[0].actions = actionsId.concat(feeds[0].actions);
                         if (actions.length < 50) {
-                            this.feedService.findAction(page, 50, {
+                            this.actionService.find(page, 50, {
                                 type: 'post',
                                 isHidden: false,
                                 user: { $in: subscribables },

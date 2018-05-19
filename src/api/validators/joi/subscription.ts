@@ -11,6 +11,7 @@ const listSubscriptions = Joi.object().keys({
         filter: Joi.string(),
         partial: Joi.bool(),
         optional: Joi.string(),
+        populate: Joi.string(),
     },
     headers: Joi.object({
         api_key: Joi.string().length(36),

@@ -23,7 +23,7 @@ export class SubscriptionService {
     }
 
     // tslint:disable-next-line:max-line-length
-    public find = (page: number = 1, perPage: number = 20, resource?: string, sort?: string, filter?: string, partial?: boolean, optional?: string): Promise<ISubscriptionModel[]> => {
+    public find = (page: number = 1, perPage: number = 20, resource?: string, sort?: string, filter?: string, partial?: boolean, optional?: string, populate?: any[] | any): Promise<ISubscriptionModel[]> => {
         return new Promise((resolve, reject) => {
             let query: Query<ISubscriptionModel[]> = null;
             if (resource) {
@@ -74,13 +74,27 @@ export class SubscriptionService {
                 });
                 query.sort(arraySort);
             }
+            if (populate) {
+                if (populate instanceof Array) {
+                    populate.forEach(populatedField => {
+                        query.populate(populatedField);
+                    });
+                } else if (typeof populate === 'string') {
+                    const array = populate.split(',');
+                    array.forEach(populatedField => {
+                        query.populate(populatedField);
+                    });
+                } else {
+                    query.populate(populate);
+                }
+            }
             query.exec((err: Error, subscriptions) => {
                 if (err) { reject(err); } else { resolve(subscriptions); }
             });
         });
     }
 
-    public create = (subscription: ISubscriptionModel, meta: {hidden: boolean} = {hidden: false}, populate?: any): Promise<ISubscriptionModel> => {
+    public create = (subscription: ISubscriptionModel, meta: { hidden: boolean } = { hidden: false }, populate?: any): Promise<ISubscriptionModel> => {
         this.getDispatcherService();
         const userService = this.userService;
         return new Promise<ISubscriptionModel>((resolve, reject) => {
@@ -90,9 +104,11 @@ export class SubscriptionService {
                 this.find(null, null, `subscriber-${subscription.subscriber};subscribable-${subscription.subscribable}`, null, null).then((subscriptions) => {
                     if (subscriptions.length) {
                         subscriptions[0].remove((err, deletedSubscription) => {
-                            this.eventDispatcher.dispatch(events.subscription.unsubscribed, {data: deletedSubscription, metadata: {
-                                hidden: meta.hidden, user: deletedSubscription.subscriber,
-                            }});
+                            this.eventDispatcher.dispatch(events.subscription.unsubscribed, {
+                                data: deletedSubscription, metadata: {
+                                    hidden: meta.hidden, user: deletedSubscription.subscriber,
+                                },
+                            });
                             resolve(deletedSubscription);
                         });
                     } else {
@@ -104,14 +120,14 @@ export class SubscriptionService {
                                             newSubscription.populate(populate, (e, populated) => {
                                                 if (e) { reject(e); } else {
                                                     this.eventDispatcher.dispatch(events.subscription.subscribed, {
-                                                        data: populated, metadata: {hidden: meta.hidden, user: populated.subscriber},
+                                                        data: populated, metadata: { hidden: meta.hidden, user: populated.subscriber },
                                                     });
                                                     resolve(newSubscription);
                                                 }
                                             });
                                         } else {
                                             this.eventDispatcher.dispatch(events.subscription.subscribed, {
-                                                data: newSubscription, metadata: {hidden: meta.hidden, user: newSubscription.subscriber},
+                                                data: newSubscription, metadata: { hidden: meta.hidden, user: newSubscription.subscriber },
                                             });
                                             resolve(newSubscription);
                                         }

@@ -1,7 +1,6 @@
 import { Schema, SchemaOptions, model } from 'mongoose';
 import { IActionModel } from '../../../interfaces/database';
-
-const types = ['post', 'comment', 'reaction', 'follow'];
+const types = ['Post', 'Comment', 'Reaction', 'Subscription', 'Message'];
 
 const schemaOptions: SchemaOptions = {
     timestamps: true,
@@ -13,12 +12,14 @@ const schemaOptions: SchemaOptions = {
 // Action Schema
 const ActionSchema = new Schema({
     user: {
-        type: String,
+        type: Schema.Types.ObjectId,
         required: true,
+        ref: 'User',
     },
     object: {
         type: Schema.Types.ObjectId,
         required: true,
+        refPath: 'type',
     },
     IsHidden: {
         type: Boolean,
@@ -33,6 +34,11 @@ const ActionSchema = new Schema({
         type: Number,
         required: false,
         default: 0,
+    },
+    notified: {
+        type: Boolean,
+        required: false,
+        default: true,
     },
 }, schemaOptions);
 

@@ -52,8 +52,9 @@ export class ChatController {
         const sort = req.query.sort || null;
         const page = parseInt(req.query.page, 10) || null;
         const perPage = parseInt(req.query.perPage, 10) || null;
-        const partial = req.query.partial || true;
-        chatService.find(page, perPage, resources, sort, filter, partial)
+        const partial = req.query.partial || false;
+        const populate = req.query.populate || false;
+        chatService.find(page, perPage, resources, sort, filter, partial, populate)
             .then((chats) => {
                 res.status(env.api.success).json(chats);
                 next();
@@ -72,8 +73,9 @@ export class ChatController {
         const perPage = parseInt(req.query.perPage, 10) || null;
         const partial = req.query.partial || null;
         const user = req.query.id || null;
+        const populate = req.query.populate || false;
         const userId = req.get('api_key') ? user : res.locals.user.sub;
-        chatService.findMessages(page, perPage, resources, sort, filter, partial, userId)
+        chatService.findMessages(page, perPage, resources, sort, filter, partial, userId, populate)
             .then((chats) => {
                 res.status(env.api.success).json(chats);
                 next();

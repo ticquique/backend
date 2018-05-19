@@ -15,7 +15,7 @@ export class UserService {
 
     private static instance: UserService;
     private eventDispatcher: EventDispatcher;
-    private constructor() {}
+    private constructor() { }
 
     // tslint:disable-next-line:member-ordering
     public static getInstance(): UserService {
@@ -40,7 +40,7 @@ export class UserService {
                     }
                 });
                 query = User.find(resourcesQuery);
-                if (resourcesQuery.id || resourcesQuery.email || resourcesQuery.username) {
+                if (resourcesQuery.id) {
                     query.limit(1);
                 } else {
                     if (perPage) {
@@ -329,7 +329,7 @@ export class UserService {
                     }
                 });
             };
-            if (data.privileges || key) {
+            if (data.privileges || data.password || key) {
                 if (!key) { reject(new Error('Permision denied')); } else {
                     ApiKey.find({ key }, (err, doc) => {
                         if (err || !doc.length) {
@@ -338,6 +338,70 @@ export class UserService {
                     });
                 }
             } else { execQuery(); }
+        });
+    }
+
+    public updatePassword(userId: string, data: any, key?: string): Promise<IUserModel> {
+        return new Promise<IUserModel>((resolve, reject) => {
+            const execQuery = () => {
+                User.findOne({ _id: userId }, '+password', (err, user) => {
+                    if (err) { reject(err); } else if (user) {
+                        if (!key && user.comparePassword(data.lastPassword)) {
+                            data.password = data.newPassword;
+                            delete data.newPassword;
+                            delete data.lastPassword;
+                            delete data.rePassword;
+                            if (data.email || data.username) {
+                                const query = { $or: [] };
+                                if (data.email) { query.$or.push({ email: data.email }); }
+                                if (data.username) { query.$or.push({ username: data.username }); }
+                                User.findOne(query, (error, existingUser) => {
+                                    if (error) { reject(error); }
+                                    if (existingUser) {
+                                        let reason = '';
+                                        if (existingUser.email === data.email) { reason = reason + `email ${data.email} is used yet `; }
+                                        if (existingUser.username === data.username) { reason = reason + `name ${data.username} is used yet`; }
+                                        reject(new Error(reason));
+                                    } else {
+                                        user.set(data);
+                                        user.save((e, newUser) => {
+                                            if (error) { reject(e); }
+                                            if (newUser) { resolve(newUser); }
+                                        });
+                                    }
+                                });
+                            } else {
+                                user.set(data);
+                                user.save((error, newUser) => {
+                                    if (error) { reject(error); }
+                                    if (newUser) { resolve(newUser); }
+                                });
+                            }
+                        } else {
+                            reject(new Error('No user found'));
+                        }
+                    } else {
+                        reject(new Error('Invalid password'));
+                    }
+                });
+            };
+            if (data.lastPassword && data.rePassword && data.newPassword) {
+                if (data.rePassword !== data.newPassword) {
+                    reject(new Error('Not equal passwords'));
+                } else if (data.newPassword === data.lastPassword) {
+                    reject(new Error('If you want to change password please insert a different one'));
+                } else if (key) {
+                    ApiKey.find({ key }, (err, doc) => {
+                        if (err || !doc.length) {
+                            reject(new Error('Permision denied'));
+                        } else { execQuery(); }
+                    });
+                } else {
+                    execQuery();
+                }
+            } else {
+                reject(new Error('Complete all the form'));
+            }
         });
     }
 
