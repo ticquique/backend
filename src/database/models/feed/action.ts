@@ -16,11 +16,6 @@ const ActionSchema = new Schema({
         required: true,
         ref: 'User',
     },
-    object: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        refPath: 'type',
-    },
     IsHidden: {
         type: Boolean,
         required: true,
@@ -29,6 +24,11 @@ const ActionSchema = new Schema({
     type: {
         type: String,
         enum: types,
+    },
+    object: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        refPath: 'type',
     },
     relevancy: {
         type: Number,

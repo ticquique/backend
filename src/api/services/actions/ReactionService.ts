@@ -79,6 +79,11 @@ export class ReactionService {
                     populate.forEach(populatedField => {
                         query.populate(populatedField);
                     });
+                } else if (typeof populate === 'string') {
+                    const array = populate.split(',');
+                    array.forEach(populatedField => {
+                        query.populate(populatedField);
+                    });
                 } else {
                     query.populate(populate);
                 }
@@ -92,49 +97,52 @@ export class ReactionService {
     public react = (reaction: IReactionModel, userId?: string, populate?: string, meta = { hidden: false }): Promise<IReactionModel> => {
         this.getDispatcherService();
         return new Promise<IReactionModel>((resolve, reject) => {
+            const removePopulateUnpopulate = (react: IReactionModel, newReaction?: IReactionModel) => {
+                if (populate) {
+                    react.populate(populate, (error, populated) => {
+                        if (error) { reject(error); } else {
+                            this.eventDispatcher.dispatch(events.reaction.deleted, {
+                                data: react, metadata: { hidden: meta.hidden, user: populated.user },
+                            });
+                            if (newReaction) {
+                                this.eventDispatcher.dispatch(events.reaction.created, {
+                                    data: newReaction, metadata: { hidden: meta.hidden, user: populated.user },
+                                });
+                                resolve(newReaction);
+                            } else {
+                                resolve(react);
+                            }
+                        }
+                    });
+                } else {
+                    this.eventDispatcher.dispatch(events.reaction.deleted, {
+                        data: react, metadata: { hidden: meta.hidden, user: react.user },
+                    });
+                    if (newReaction) {
+                        this.eventDispatcher.dispatch(events.reaction.created, {
+                            data: newReaction, metadata: { hidden: meta.hidden, user: newReaction.user },
+                        });
+                        resolve(newReaction);
+                    } else {
+                        resolve(react);
+                    }
+                }
+            };
             if (userId) { reaction.user = userId; }
             Reaction.findOneAndRemove({ user: reaction.user, related: reaction.related }, (err, removed) => {
                 if (err) { reject(err); }
-                reaction.save((e, newReaction) => {
-                    if (e) { reject(e); }
-                    if (removed) {
-                        this.eventDispatcher.dispatch(events.reaction.deleted, {
-                            data: newReaction, metadata: { hidden: meta.hidden, user: removed.user },
-                        });
-                        if (removed.type === reaction.type) {
-                            if (populate) {
-                                removed.populate(populate, (error, populated) => {
-                                    if (error) { reject(error); } else {
-                                        this.eventDispatcher.dispatch(events.reaction.deleted, {
-                                            data: removed, metadata: { hidden: meta.hidden, user: populated.user },
-                                        });
-                                        resolve(removed);
-                                    }
-                                });
-                            } else {
-                                this.eventDispatcher.dispatch(events.reaction.deleted, {
-                                    data: removed, metadata: { hidden: meta.hidden, user: removed.user },
-                                });
-                                resolve(removed);
-                            }
-                        } else {
-                            if (populate) {
-                                newReaction.populate(populate, (error, populated) => {
-                                    if (error) { reject(error); } else {
-                                        this.eventDispatcher.dispatch(events.reaction.created, {
-                                            data: newReaction, metadata: { hidden: meta.hidden, user: populated.user },
-                                        });
-                                        resolve(newReaction);
-                                    }
-                                });
-                            } else {
-                                this.eventDispatcher.dispatch(events.reaction.created, {
-                                    data: newReaction, metadata: { hidden: meta.hidden, user: newReaction.user },
-                                });
-                                resolve(newReaction);
-                            }
-                        }
+                if (removed) {
+                    if (removed.type === reaction.type) {
+                        removePopulateUnpopulate(removed);
                     } else {
+                        reaction.save((e, newReaction) => {
+                            if (err) { reject(err); }
+                            removePopulateUnpopulate(removed, newReaction);
+                        });
+                    }
+                } else {
+                    reaction.save((e, newReaction) => {
+                        if (err) { reject(err); }
                         if (populate) {
                             newReaction.populate(populate, (error, populated) => {
                                 if (error) { reject(error); } else {
@@ -150,8 +158,8 @@ export class ReactionService {
                             });
                             resolve(newReaction);
                         }
-                    }
-                });
+                    });
+                }
             });
         });
     }

@@ -19,6 +19,7 @@ const ReactionSchema = new Schema({
     user: {
         type: String,
         required: true,
+        ref: 'User',
     },
     related: {
         type: Schema.Types.ObjectId,

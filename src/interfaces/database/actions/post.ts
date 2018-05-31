@@ -4,9 +4,15 @@ interface IPost {
     title?: string;
     attachments?: string[];
     author?: string;
+    reactions?: {
+        like: number,
+        dislike: number,
+        love: number,
+        fun: number
+    };
     comments?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-export interface IPostModel extends IPost, mongoose.Document {}
+export interface IPostModel extends IPost, mongoose.Document { }

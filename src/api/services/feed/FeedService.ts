@@ -93,7 +93,7 @@ export class FeedService {
     public create = (feed: IFeedModel, userId?: string, populate?: string): Promise<IFeedModel> => {
         return new Promise<IFeedModel>((resolve, reject) => {
             if (userId) { feed.user = userId; }
-            this.actionService.find(1, 350, null).then(actions => {
+            this.actionService.find(1, 350, {type: 'Post'}).then(actions => {
                 feed.actions = actions.map(value => value._id);
                 feed.save((err, newFeed) => {
                     if (err) { reject(err); }
@@ -106,6 +106,12 @@ export class FeedService {
                     }
                 });
             }).catch(e => reject(e));
+        });
+    }
+
+    public internalUpdate = (feed: IFeedModel) => {
+        return new Promise<IFeedModel>((resolve, reject) => {
+            feed.save(err => { if (err) {reject(err); } else { resolve(feed); }} );
         });
     }
 

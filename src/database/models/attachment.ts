@@ -1,6 +1,6 @@
 import { Schema, SchemaOptions, model } from 'mongoose';
 import { IAttachmentModel } from '../../interfaces/database/attachment';
-const attachmentTypes = ['book', 'album', 'photo'];
+const attachmentTypes = ['book', 'album', 'photo', 'profile'];
 
 const schemaOptions: SchemaOptions = {
     timestamps: true,

@@ -16,7 +16,7 @@ export class CommentService {
     }
 
     // tslint:disable-next-line:max-line-length
-    public find = (page: number = 1, perPage: number = 20, resource?: string, sort?: string, filter?: string, partial?: boolean): Promise<ICommentModel[]> => {
+    public find = (page: number = 1, perPage: number = 20, resource?: string, sort?: string, filter?: string, partial?: boolean, populate?: any): Promise<ICommentModel[]> => {
         return new Promise<ICommentModel[]>((resolve, reject) => {
             let query: mongoose.Query<ICommentModel[]> = null;
             if (resource) {
@@ -66,6 +66,20 @@ export class CommentService {
                 });
                 query.sort(arraySort);
             }
+            if (populate) {
+                if (populate instanceof Array) {
+                    populate.forEach(populatedField => {
+                        query.populate(populatedField);
+                    });
+                } else if (typeof populate === 'string') {
+                    const array = populate.split(',');
+                    array.forEach(populatedField => {
+                        query.populate(populatedField);
+                    });
+                } else {
+                    query.populate(populate);
+                }
+            }
             query.exec((err: Error, conversations) => {
                 if (err) { reject(err); } else { resolve(conversations); }
             });
@@ -76,7 +90,22 @@ export class CommentService {
         return new Promise<ICommentModel>((resolve, reject) => {
             comment.save((err, newComment) => {
                 if (err) { reject(err); }
-                resolve(comment);
+                resolve(newComment);
+            });
+        });
+    }
+
+    public addComment = (discussionId: string, text: string, author: {name: string, id: string}): Promise<ICommentModel> => {
+        return new Promise<ICommentModel>((resolve, reject) => {
+            Comment.find({id: discussionId}).limit(1).exec((err, comments) => {
+                if (err) { reject(err);
+                } else if (comments.length) {
+                    const comment = comments[0];
+                    const newComment = new Comment({ discussionId: comment._id });
+                    comment.comments.unshift({text, author, comments: newComment._id});
+                    newComment.save();
+                    comment.save();
+                } else { reject(new Error('Invalid resource query')); }
             });
         });
     }

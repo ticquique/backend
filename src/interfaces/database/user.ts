@@ -11,8 +11,20 @@ interface IUser {
     numComments?: number;
     privileges?: 'Member' | 'Client' | 'Owner' | 'Admin';
     profile?: {
-        picture?: string,
-        profilePicture?: string,
+        picture?: {
+            small?: string,
+            medium?: string,
+            big?: string,
+            low?: string,
+            orig?: string,
+        },
+        profilePicture?: {
+            small?: string,
+            medium?: string,
+            big?: string,
+            low?: string,
+            orig?: string,
+        },
         city?: string,
         country?: string,
         birth_date?: Date,
@@ -37,4 +49,4 @@ interface IUser {
     comparePassword(this: IUserModel, password: string, user?: IUserModel): boolean;
 }
 
-export interface IUserModel extends IUser, mongoose.Document {}
+export interface IUserModel extends IUser, mongoose.Document { }

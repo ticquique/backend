@@ -74,13 +74,18 @@ const UserSchema = new Schema({
     },
     profile: {
         picture: {
-            type: String,
-            required: false,
-            default: 'https://gravatar.com/avatar/?s=200&d=retro',
+            small: { type: String, required: false, default: 'https://gravatar.com/avatar/?s=200&d=retro' },
+            medium: { type: String, required: false, default: 'https://gravatar.com/avatar/?s=200&d=retro' },
+            big: { type: String, required: false, default: 'https://gravatar.com/avatar/?s=200&d=retro' },
+            low: { type: String, required: false, default: 'https://gravatar.com/avatar/?s=200&d=retro' },
+            orig: { type: String, required: false, default: 'https://gravatar.com/avatar/?s=200&d=retro' },
         },
         profilePicture: {
-            type: String,
-            required: false,
+            small: { type: String, required: false },
+            medium: { type: String, required: false },
+            big: { type: String, required: false },
+            low: { type: String, required: false },
+            orig: { type: String, required: false },
         },
         city: {
             type: String,

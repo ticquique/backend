@@ -80,6 +80,11 @@ export class PostService {
                     populate.forEach(populatedField => {
                         query.populate(populatedField);
                     });
+                } else if (typeof populate === 'string') {
+                    const array = populate.split(',');
+                    array.forEach(populatedField => {
+                        query.populate(populatedField);
+                    });
                 } else {
                     query.populate(populate);
                 }
@@ -90,7 +95,18 @@ export class PostService {
         });
     }
 
-    public create = (post: IPostModel, userId?: string, populate?: string, meta = {hidden: false}): Promise<IPostModel> => {
+    public updateReaction = (id, type: 'like'| 'dislike'| 'love'| 'fun', amount: number) => {
+        Post.find({_id: id}).limit(1).exec((err, posts) => {
+            if (posts && posts.length) {
+                const post = posts[0];
+                post.reactions[type] = post.reactions[type] + amount;
+                post.markModified('reactions');
+                post.save();
+            }
+        });
+    }
+
+    public create = (post: IPostModel, userId?: string, populate?: string, meta = { hidden: false }): Promise<IPostModel> => {
         this.getDispatcherService();
         return new Promise<IPostModel>((resolve, reject) => {
             if (userId) { post.author = userId; }
@@ -99,12 +115,12 @@ export class PostService {
                 if (populate) {
                     newPost.populate(populate, (e, populated) => {
                         if (e) { reject(e); } else {
-                            this.eventDispatcher.dispatch(events.post.created, {data: newPost, metadata: {hidden: meta.hidden, user: populated.author}});
+                            this.eventDispatcher.dispatch(events.post.created, { data: newPost, metadata: { hidden: meta.hidden, user: populated.author } });
                             resolve(newPost);
                         }
                     });
                 } else {
-                    this.eventDispatcher.dispatch(events.post.created, {data: newPost, metadata: {hidden: meta.hidden, user: newPost.author}});
+                    this.eventDispatcher.dispatch(events.post.created, { data: newPost, metadata: { hidden: meta.hidden, user: newPost.author } });
                     resolve(newPost);
                 }
             });

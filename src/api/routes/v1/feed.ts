@@ -2,15 +2,16 @@
 import * as express from 'express';
 import { authMiddleware } from '../../middlewares/authMiddleware';
 import { PostController } from '../../controllers/postController';
-import { getPostMiddleware } from '../../validators';
+import { getFeedMiddleware } from '../../validators';
 
 module.exports = async () => {
     const postController = PostController.getInstance();
     return new Promise(async (resolve, reject) => {
         const router = express.Router();
         router.route('/')
-            .post(authMiddleware('basic'), postController.create)
-            .get(getPostMiddleware, postController.find);
+            .get(authMiddleware('basic'), getFeedMiddleware, postController.getFeed);
+        router.route('/prev')
+            .get(authMiddleware('basic'), getFeedMiddleware, postController.getPreviousActions);
 
         if (router) { resolve(router); } else { reject(''); }
     });

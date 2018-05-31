@@ -14,7 +14,7 @@ module.exports = async () => {
             .get(listUsersMiddleware, userController.find)
             .post(authMiddleware('admin'), createUserMiddleware, userController.create)
             .put(authMiddleware('basic'), updatePasswordMiddleware, userController.updatePassword)
-            .patch(authMiddleware('basic'), updateUserMiddleware, userController.updateUser)
+            .patch(authMiddleware('basic'), updateUserMiddleware, userController.updateProfile)
             .delete(authMiddleware('basic'), deleteUserMiddleware, userController.deleteUser);
 
         router.route('/registry')

@@ -27,7 +27,7 @@ export class SubscriptionEventSubscriber {
                 this.chatService.emitNotification(action, data.data.subscribable);
                 log.info('Subscription ' + data.data.id + ' created!');
             }).catch(e => log.error(e));
-        }).catch(err => log.error('Post ' + data.data.id + ' created! but Action not added' + err));
+        }).catch(err => log.error('Subscription ' + data.data.id + ' created! but Action not added' + err));
     }
     @On(events.subscription.unsubscribed)
     public onUnsubscription(data: MetaEvents): void {

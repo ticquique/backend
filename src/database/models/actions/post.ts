@@ -31,6 +31,20 @@ const PostSchema = new Schema({
         required: false,
         ref: 'Comment',
     },
+    reactions: {
+        type: {
+            like: Number,
+            dislike: Number,
+            love: Number,
+            fun: Number,
+        },
+        required: false,
+        default: 0,
+    },
+    text: {
+        type: String,
+        required: false,
+    },
 }, schemaOptions);
 
 export const Post = model<IPostModel>('Post', PostSchema);

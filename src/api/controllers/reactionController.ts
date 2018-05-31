@@ -20,12 +20,6 @@ export class ReactionController {
     }
 
     public find = (req: Request, res: Response, next: NextFunction): void => {
-        let optional = null;
-        if (req.get('api_key')) {
-            optional = req.query.resource || null;
-        } else {
-            optional = res.locals.user.sub;
-        }
         const reactionService = this.reactionService;
         const resources = req.query.resource || null;
         const filter = req.query.filter || null;
@@ -33,7 +27,8 @@ export class ReactionController {
         const page = parseInt(req.query.page, 10) || null;
         const perPage = parseInt(req.query.perPage, 10) || null;
         const partial = req.query.partial || null;
-        reactionService.find(page, perPage, resources, sort, filter, partial, optional)
+        const populate = req.query.populate || false;
+        reactionService.find(page, perPage, resources, sort, filter, partial, populate)
             .then((subscriptions) => {
                 res.status(env.api.success).json(subscriptions);
                 next();
@@ -45,7 +40,7 @@ export class ReactionController {
 
     public react = (req: Request, res: Response, next: NextFunction): void => {
         const reactionService = this.reactionService;
-        const reaction = new Reaction(req.body.reaction);
+        const reaction = new Reaction(req.body);
         const user = req.query.id || null;
         const hidden = req.query.hidden || false;
         const userId = req.get('api_key') ? user : res.locals.user.sub;

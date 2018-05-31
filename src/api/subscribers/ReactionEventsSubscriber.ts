@@ -7,6 +7,7 @@ import { MetaEvents } from '../../interfaces';
 import { ActionService } from '../services/feed/ActionService';
 import { NotificationService } from '../services/feed/NotificationService';
 import { ChatService } from '../services/ChatService';
+import { PostService } from '../services/actions/PostService';
 
 const log = new Logger(__filename);
 
@@ -16,6 +17,7 @@ export class ReactionEventSubscriber {
     private actionService = ActionService.getInstance();
     private notificationService = NotificationService.getInstance();
     private chatService = ChatService.getInstance();
+    private postService = PostService.getInstance();
 
     @On(events.reaction.created)
     public onReaction(data: MetaEvents): void {
@@ -25,6 +27,7 @@ export class ReactionEventSubscriber {
         this.actionService.create(action).then(value => {
             data.data.populate('related', (err, reactionWithPost) => {
                 if (reactionWithPost.reference === 'Post') {
+                    this.postService.updateReaction(data.data.related, data.data.type, 1);
                     this.notificationService.update([action], reactionWithPost.related.author).then(val => {
                         this.chatService.emitNotification(value, reactionWithPost.related.author);
                     }).catch(e => log.error(e));
@@ -38,6 +41,7 @@ export class ReactionEventSubscriber {
 
     @On(events.reaction.deleted)
     public onDeleted(data: MetaEvents): void {
+        this.postService.updateReaction(data.data.related, data.data.type, -1);
         log.info('Reaction ' + data.data.id + ' deleted!');
     }
 

@@ -9,13 +9,19 @@ import { User } from '../../database/models/user';
 import { Valid } from '../../database/models/valid';
 import { IValidModel } from '../../interfaces/database';
 import { AuthService } from '../services/AuthService';
+import { FileData, Size, UploadedFile } from '../../interfaces';
+import * as Busboy from 'busboy';
+import { UploadService } from '../services/UploadService';
+import { updateMiddleware } from '../validators';
 
 export class UserController {
 
     private static instance: UserController;
     private userService: UserService = UserService.getInstance();
     private authService: AuthService = AuthService.getInstance();
-    private constructor() {}
+    private uploadService: UploadService = UploadService.getInstance();
+
+    private constructor() { }
     // tslint:disable-next-line:member-ordering
     public static getInstance(): UserController {
         if (!UserController.instance) {
@@ -150,6 +156,89 @@ export class UserController {
             const e = new HttpError(401, err.message);
             next(e);
         });
+    }
+
+    public updateProfile = (req: Request, res: Response, next: NextFunction) => {
+        let busboy;
+        let userId: string;
+        const updates: any = {};
+        const promisesUpload: Array<Promise<UploadedFile>> = [];
+        try {
+            busboy = new Busboy({
+                headers: req.headers,
+                limits: { files: 20, fileSize: 1024 * 1024 * 100 },
+                preservePath: true,
+            });
+            busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+                if (!filename) { file.resume(); }
+                if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(filename)) {
+                    const params: FileData = { originalname: filename, encoding, mimetype, fieldname };
+                    let sizes: Size[] = [{ name: 'big', prefix: 'big-', size: 1920 },
+                    { name: 'medium', prefix: 'medium-', size: 1280 },
+                    { name: 'small', prefix: 'small-', size: 720 },
+                    { name: 'low', prefix: 'low-', size: 320 }];
+                    if (fieldname === 'picture') {
+                        sizes = [{ name: 'big', prefix: 'big-', size: 720 },
+                        { name: 'medium', prefix: 'medium-', size: 300 },
+                        { name: 'small', prefix: 'small-', size: 120 },
+                        { name: 'low', prefix: 'low-', size: 60 }];
+                    }
+                    promisesUpload.push(this.uploadService.uploadSingle(file, params, res.locals.user.sub, sizes));
+                } else { file.resume(); }
+            });
+            busboy.on('field', (fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) => {
+                if (fieldname === 'userId') { userId = val; } else { updates[fieldname] = val; }
+            });
+            busboy.on('error', (err) => { next(err); });
+            busboy.on('partsLimit', () => { next(new Error('upload parts limit reached')); });
+            busboy.on('filesLimit', () => { next(new Error('upload files limit reached')); });
+            busboy.on('fieldsLimit', () => { next(new Error('upload fields limit reached')); });
+            busboy.on('finish', () => {
+                req.unpipe(busboy);
+                busboy.removeAllListeners();
+                if (req.get('api_key')) {
+                    userId = updates.userId;
+                } else {
+                    userId = res.locals.user.sub;
+                }
+                const validator = updateMiddleware(userId, updates);
+                if (validator === true) {
+                    if (promisesUpload.length > 0) {
+                        Promise.all(promisesUpload).then((values) => {
+                            if (values && values.length) {
+                                values.forEach(value => {
+                                    if (value.params.fieldname && value.params.fieldname === 'picture') {
+                                        updates['profile.picture'] = value.urls;
+                                    } else if (value.params.fieldname && value.params.fieldname === 'profilePicture') {
+                                        updates['profile.profilePicture'] = value.urls;
+                                    }
+                                });
+                            }
+                            this.userService.update(userId, updates, req.get('api_key') || null).then((user) => {
+                                res.status(env.api.success).json(user);
+                            }).catch((err: Error) => {
+                                const e = new HttpError(401, err.message);
+                                next(e);
+                            });
+                        }).catch((err) => {
+                            next(err);
+                        });
+                    } else {
+                        this.userService.update(userId, updates, req.get('api_key') || null).then((user) => {
+                            res.status(env.api.success).json(user);
+                        }).catch((err: Error) => {
+                            const e = new HttpError(401, err.message);
+                            next(e);
+                        });
+                    }
+                } else {
+                    next(validator);
+                }
+            });
+            req.pipe(busboy);
+        } catch (err) {
+            return next(err);
+        }
     }
 
 }

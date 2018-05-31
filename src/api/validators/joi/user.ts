@@ -117,6 +117,32 @@ const updatePassword = Joi.object().keys({
         },
     },
 });
+
+const update = Joi.object().keys({
+    id: Joi.string().length(24).alphanum().required(),
+    body: {
+        role: Joi.string().valid(roles),
+        email: Joi.string().email(),
+        username: Joi.string().alphanum().min(3).max(80),
+        privacy: Joi.string().valid(privacy),
+        privileges: Joi.string().valid(privileges),
+        profile: {
+            picture: Joi.any(),
+            profilePicture: Joi.any(),
+            city: Joi.string(),
+            country: Joi.string(),
+            birts_date: Joi.date().min(Date.now() - 1000).max(Date.now()),
+            gender: Joi.string().valid(gender),
+            phone: Joi.string().min(5).max(20),
+            hobbies: Joi.string().max(3000),
+            website: Joi.string().uri(),
+            facebook: Joi.string().uri(),
+            twitter: Joi.string().uri(),
+            google: Joi.string().uri(),
+            stripe: Joi.string(),
+        },
+    },
+});
 // GET /v1/user
 export const listUsersMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     Joi.validate(req.query, listUsers, (err, value) => {
@@ -202,7 +228,7 @@ export const deleteUserMiddleware = (req: express.Request, res: express.Response
         const e: HttpError = new HttpError(401, 'Login to continue');
         next(e);
     }
-    Joi.validate({id: user}, deleteUser, (err, value) => {
+    Joi.validate({ id: user }, deleteUser, (err, value) => {
         if (err) {
             const e: HttpError = new HttpError(401, err.message);
             next(e);
@@ -214,7 +240,7 @@ export const deleteUserMiddleware = (req: express.Request, res: express.Response
 
 // DELETE /v1/user/validation
 export const deleteRegistryMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    Joi.validate({headers: req.headers, id: req.query.id}, deleteValid, (err, value) => {
+    Joi.validate({ headers: req.headers, id: req.query.id }, deleteValid, (err, value) => {
         if (err) {
             const e: HttpError = new HttpError(401, err.message);
             next(e);
@@ -245,6 +271,11 @@ export const updateUserMiddleware = (req: express.Request, res: express.Response
             next();
         }
     });
+};
+
+export const updateMiddleware = (id: string, body) => {
+    const { error } = Joi.validate({ id, body }, update);
+    if (error) { return error; } else { return true; }
 };
 
 // PUT /v1/user/token

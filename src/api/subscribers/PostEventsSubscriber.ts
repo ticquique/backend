@@ -16,7 +16,7 @@ export class PostEventSubscriber {
     @On(events.post.created)
     public onPostCreated(data: MetaEvents): void {
         const action: IActionModel = new Action({
-            user: data.metadata.user, type: 'Reaction', object: data.data._id, relevancy: 0, IsHidden: data.metadata.hidden,
+            user: data.metadata.user, type: 'Post', object: data.data._id, relevancy: 0, IsHidden: data.metadata.hidden,
         });
         this.actionService.create(action).then(value => {
             log.info('Post ' + data.data.id + ' created!');
