@@ -33,10 +33,22 @@ const PostSchema = new Schema({
     },
     reactions: {
         type: {
-            like: Number,
-            dislike: Number,
-            love: Number,
-            fun: Number,
+            like: {
+                type: Number,
+                default: 0,
+            },
+            dislike: {
+                type: Number,
+                default: 0,
+            },
+            love: {
+                type: Number,
+                default: 0,
+            },
+            fun: {
+                type: Number,
+                default: 0,
+            },
         },
         required: false,
         default: 0,

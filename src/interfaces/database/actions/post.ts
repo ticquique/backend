@@ -11,6 +11,7 @@ interface IPost {
         fun: number
     };
     comments?: string;
+    tags?: string[];
     createdAt?: Date;
     updatedAt?: Date;
 }

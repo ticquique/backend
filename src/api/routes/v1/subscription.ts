@@ -9,7 +9,7 @@ module.exports = async () => {
     return new Promise(async (resolve, reject) => {
         const router = express.Router();
         router.route('/')
-            .get(authMiddleware('basic'), listSubscriptionMiddleware, subscriptionController.find)
+            .get(listSubscriptionMiddleware, subscriptionController.find)
             .post(authMiddleware('basic'), createSubscriptionMiddleware, subscriptionController.create)
             .delete(authMiddleware('basic'), deleteSubscriptionMiddleware, subscriptionController.delete);
 

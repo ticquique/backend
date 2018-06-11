@@ -25,6 +25,7 @@ const createSubscription = Joi.object().keys({
     subscription: Joi.object({
         subscriber: Joi.string().length(24).alphanum(),
         subscribable: Joi.string().length(24).alphanum(),
+        populate: Joi.string(),
     }).required(),
 });
 

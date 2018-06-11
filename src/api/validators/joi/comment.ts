@@ -21,7 +21,7 @@ const createComment = Joi.object().keys({
 
 // GET /v1/comment
 export const getCommentMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    Joi.validate(req.query, getComment, (err, value) => {
+    Joi.validate(req.body, getComment, (err, value) => {
         if (err) {
             const e: HttpError = new HttpError(401, err.message);
             next(e);

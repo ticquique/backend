@@ -237,7 +237,14 @@ export class UserController {
             });
             req.pipe(busboy);
         } catch (err) {
-            return next(err);
+            userId = req.get('api_key') ? req.query.userid : res.locals.user.sub;
+            this.userService.update(userId, req.body, req.get('api_key') || null).then((user) => {
+                res.status(env.api.success).json(user);
+            }).catch((err: Error) => {
+                const e = new HttpError(401, err.message);
+                next(e);
+            });
+            // return next(err);
         }
     }
 

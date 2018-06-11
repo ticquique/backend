@@ -23,7 +23,7 @@ export class SubscriptionService {
     }
 
     // tslint:disable-next-line:max-line-length
-    public find = (page: number = 1, perPage: number = 20, resource?: string, sort?: string, filter?: string, partial?: boolean, optional?: string, populate?: any[] | any): Promise<ISubscriptionModel[]> => {
+    public find = (page: number = 1, perPage: number = 20, resource?: string, sort?: string, filter?: string, partial?: boolean, populate?: any[] | any): Promise<ISubscriptionModel[]> => {
         return new Promise((resolve, reject) => {
             let query: Query<ISubscriptionModel[]> = null;
             if (resource) {
@@ -44,9 +44,6 @@ export class SubscriptionService {
             } else {
                 query = Subscription.find({});
                 query.limit(perPage).skip((page - 1) * perPage);
-            }
-            if (optional) {
-                query.or([{ subscriber: optional }, { subscribable: optional }]);
             }
             if (filter) {
                 const filters = filter.split(',');

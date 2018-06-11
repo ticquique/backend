@@ -95,16 +95,18 @@ export class CommentService {
         });
     }
 
-    public addComment = (discussionId: string, text: string, author: {name: string, id: string}): Promise<ICommentModel> => {
-        return new Promise<ICommentModel>((resolve, reject) => {
-            Comment.find({id: discussionId}).limit(1).exec((err, comments) => {
-                if (err) { reject(err);
+    public addComment = (discussionId: string, text: string, author: { name: string, id: string }): Promise<any> => {
+        return new Promise<any>((resolve, reject) => {
+            Comment.find({ discussionId }).limit(1).exec((err, comments) => {
+                if (err) {
+                    reject(err);
                 } else if (comments.length) {
                     const comment = comments[0];
                     const newComment = new Comment({ discussionId: comment._id });
-                    comment.comments.unshift({text, author, comments: newComment._id});
+                    comment.comments.unshift({ text, author, comments: newComment._id });
                     newComment.save();
                     comment.save();
+                    resolve({ text, author, comments: newComment._id });
                 } else { reject(new Error('Invalid resource query')); }
             });
         });

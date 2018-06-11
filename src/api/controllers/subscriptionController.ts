@@ -19,12 +19,6 @@ export class SubscriptionController {
     }
 
     public find = (req: Request, res: Response, next: NextFunction): void => {
-        let optional = null;
-        if (req.get('api_key')) {
-            optional = req.query.resource || null;
-        } else {
-            optional = res.locals.user.sub;
-        }
         const subscriptionService = this.subscriptionService;
         const resources = req.query.resource || null;
         const filter = req.query.filter || null;
@@ -33,7 +27,7 @@ export class SubscriptionController {
         const perPage = parseInt(req.query.perPage, 10) || null;
         const partial = req.query.partial || null;
         const populate = req.query.populate || null;
-        subscriptionService.find(page, perPage, resources, sort, filter, partial, optional, populate)
+        subscriptionService.find(page, perPage, resources, sort, filter, partial, populate)
             .then((subscriptions) => {
                 res.status(env.api.success).json(subscriptions);
                 next();
@@ -47,9 +41,10 @@ export class SubscriptionController {
         const subscriptionService = this.subscriptionService;
         let subscriber = null;
         if (req.get('api_key')) { subscriber = req.body.subscriber; } else { subscriber = res.locals.user.sub; }
+        const populate = req.body.populate || null;
         const subscriptionData = {subscriber, subscribable: req.body.subscribable };
         const subscription = new Subscription(subscriptionData);
-        subscriptionService.create(subscription)
+        subscriptionService.create(subscription, { hidden: false }, populate)
             .then((newSubscription) => {
                 res.status(env.api.success).json(newSubscription);
                 next();

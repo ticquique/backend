@@ -37,11 +37,11 @@ export class CommentController {
 
     public newComment = (req: Request, res: Response, next: NextFunction): void => {
         const commentService = this.commentService;
-        const discussionId = req.query.discussionId || null;
-        const text = req.query.text || null;
+        const discussionId = req.body.discussionId || null;
+        const text = req.body.text || null;
         const author: {name: string, id: string} = {
-            name: req.query.name,
-            id: req.get('api_key') ? req.query.user : res.locals.user.sub,
+            name: req.body.name,
+            id: req.get('api_key') ? req.body.user : res.locals.user.sub,
         };
         commentService.addComment(discussionId, text, author)
             .then((newComment) => {

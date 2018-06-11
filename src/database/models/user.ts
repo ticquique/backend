@@ -72,6 +72,14 @@ const UserSchema = new Schema({
         enum: privileges,
         default: 'member',
     },
+    tags: [{
+        type: String,
+        required: false,
+    }],
+    preferences: [{
+        type: String,
+        required: false,
+    }],
     profile: {
         picture: {
             small: { type: String, required: false, default: 'https://gravatar.com/avatar/?s=200&d=retro' },
@@ -92,9 +100,8 @@ const UserSchema = new Schema({
             required: false,
         },
         country: {
-            type: Schema.Types.ObjectId,
+            type: String,
             required: false,
-            rel: 'Country',
         },
         birth_date: {
             type: Number,
@@ -131,8 +138,10 @@ const UserSchema = new Schema({
             required: false,
         },
         stripe: {
-            type: String,
-            required: false,
+            stripe_user_id: { type: String, required: false},
+            refresh_token: { type: String, required: false, select: false},
+            access_token: { type: String, required: false, select: false},
+            customer_token: { type: String, required: false},
         },
     },
     points: {
